@@ -16,6 +16,9 @@
         push:
             branches:
                 - main
+        pull_request:
+            branches:
+                - main
     
     # Variables to configure the workflow
     env:
