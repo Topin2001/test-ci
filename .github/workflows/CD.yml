@@ -76,8 +76,8 @@
               VERSION: ${{ steps.deliverability.outputs.version }}
               MILSTONE_NUMBER: ${{ steps.deliverability.outputs.milestone_number }}
             run: |
-              echo $VERSION
-              echo $MILSTONE_NUMBER
+              echo " Version : $VERSION"
+              echo "Milestone_versino :  $MILSTONE_NUMBER"
 
     
       close_milestone:
