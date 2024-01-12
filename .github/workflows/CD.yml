@@ -61,8 +61,8 @@
               fi
               echo Ready to deliver
               echo "{version}={$version}" >> $GITHUB_OUTPUT
-              echo "::set-output name=milestone_number::$milestone_number"
-              echo "::set-output name=delivery::allowed"
+              echo "{milestone_number}={$milestone_number}" >> $GITHUB_OUTPUT
+              echo "{delivery}=allowed" >> $GITHUB_OUTPUT
       release:
         name: Test output access
         runs-on: ubuntu-20.04
