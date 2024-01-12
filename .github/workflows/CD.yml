@@ -60,6 +60,8 @@
                 exit 1
               fi
               echo Ready to deliver
+              echo "version=$version"
+              echo "milestone_number=$milestone_number"
               echo "{version}={$version}" >> $GITHUB_OUTPUT
               echo "{milestone_number}={$milestone_number}" >> $GITHUB_OUTPUT
               echo "{delivery}=allowed" >> $GITHUB_OUTPUT
