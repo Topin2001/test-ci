@@ -60,6 +60,7 @@
                 exit 1
               fi
               echo Ready to deliver
+              echo "{version}={$version}" >> $GITHUB_OUTPUT
               echo "::set-output name=version::$version"
               echo "::set-output name=milestone_number::$milestone_number"
               echo "::set-output name=delivery::allowed"
