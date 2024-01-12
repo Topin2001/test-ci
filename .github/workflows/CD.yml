@@ -33,8 +33,6 @@
         runs-on: ubuntu-20.04
         outputs:
           delivery: ${{ steps.version.outputs.delivery }}
-          version: ${{ steps.version.outputs.version }}
-          milestone_number: ${{ steps.version.outputs.milestone_number }}
         steps:
           # Get the version number from the milestone title and that it follows semver
           - name: Get and check version
@@ -73,7 +71,7 @@
         steps:
           - name: Merge and tag
             env:
-              VERSION: ${{ steps.deliverability.outputs.version }}
+              VERSION: ${{ steps.version.outputs.version }}
               MILSTONE_NUMBER: ${{ steps.deliverability.outputs.milestone_number }}
             run: |
               echo " Version : $VERSION"
