@@ -64,54 +64,15 @@
               echo "::set-output name=milestone_number::$milestone_number"
               echo "::set-output name=delivery::allowed"
       release:
-        name: Release a new version of the docker image
+        name: Test output access
         runs-on: ubuntu-20.04
         needs: deliverability
         if: needs.deliverability.outputs.delivery == 'allowed'
         steps:
-          # git clone
-          - uses: actions/checkout@v2
-            with:
-              fetch-depth: 0
-          # Merge develop into master (fast forward) and tag master
           - name: Merge and tag
             run: |
-              git config --global user.name "GitHub Actions"
-              git config --global user.email catlab@cnes.fr
-              git checkout --track origin/master
-              git merge origin/develop
-              git tag -a ${{ needs.deliverability.outputs.version }} \
-                -m "Release ${{ needs.deliverability.outputs.version }}"
-              git push origin master --follow-tags
-          # Get the tag of the last release
-          - name: Get tag of last release
-            id: last_release
-            run: |
-              tags=($(git tag --sort="-v:refname" | grep -P -e '[0-9]+\.[0-9]+\.[0-9]+'))
-              echo The tag of the previous release is ${tags[1]}
-              echo "::set-output name=tag::${tags[1]}"
-          # Generate the changelog since last release
-          - name: Generate the changelog
-            uses: charmixer/auto-changelog-action@v1
-            with:
-              token: ${{ secrets.GITHUB_TOKEN }}
-              since_tag: ${{ steps.last_release.outputs.tag }}
-          # Append a link to the image on Docker Hub to the changelog
-          - name: Append link to Docker Hub
-            run: |
-              cat CHANGELOG.md > changelog.md
-              echo -e "\nView the image on" \
-                "[DockerHub](https://hub.docker.com/r/$DOCKER_IMAGE_NAME)." \
-                >> changelog.md
-          # Create a new release on GitHub
-          - name: Create GitHub Release
-            uses: actions/create-release@v1
-            env:
-              GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-            with:
-              tag_name: ${{ needs.deliverability.outputs.version }}
-              release_name: ${{ env.DOCKER_IMAGE_NAME }}:${{ needs.deliverability.outputs.version }}
-              body_path: changelog.md
+              echo ${{ needs.deliverability.outputs.version }}
+              echo ${{ needs.deliverability.outputs.milestone_number }}
 
     
       close_milestone:
