@@ -72,9 +72,12 @@
         if: needs.deliverability.outputs.delivery == 'allowed'
         steps:
           - name: Merge and tag
+            env:
+              VERSION: ${{ steps.deliverability.outputs.version }}
+              MILSTONE_NUMBER: ${{ steps.deliverability.outputs.milestone_number }}
             run: |
-              echo ${{ needs.deliverability.outputs.version }}
-              echo ${{ needs.deliverability.outputs.milestone_number }}
+              echo $VERSION
+              echo $MILSTONE_NUMBER
 
     
       close_milestone:
