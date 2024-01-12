@@ -42,7 +42,7 @@
             run: |
               milestones=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
                   https://api.github.com/repos/${{ github.repository }}/milestones \
-                | jq -r '. | map(select(.open_issues == 0 and .closed_issues > 0 and .state == "open"))')
+                | jq -r '. | map(select(.state == "open"))')
               if [ "$milestones" == "[]" ]
               then
                 echo No milestone completed, not delivering
@@ -62,9 +62,9 @@
               echo Ready to deliver
               echo "version=$version"
               echo "milestone_number=$milestone_number"
+              echo "::set-output name=delivery::allowed"
               echo "{version}={$version}" >> $GITHUB_OUTPUT
               echo "{milestone_number}={$milestone_number}" >> $GITHUB_OUTPUT
-              echo "{delivery}=allowed" >> $GITHUB_OUTPUT
       release:
         name: Test output access
         runs-on: ubuntu-20.04
