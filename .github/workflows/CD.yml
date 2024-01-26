@@ -1,97 +1,33 @@
 # Description
 # ===========
-# This workflow is triggered each time the CI workflow succeed
-# on develop.
-# It looks for the first milestone that is completed.
-# It must have a title matching the pattern '[0-9]+\.[0-9]+\.[0-9]+'.
-# It then merges the develop branch into the master branch
-# and tags the master branch with the title of the milestone.
-# Finally, it creates a new Release on GitHub where it writes an
-# automatically generated changelog.
-# It also close the milestone (which is 100% completed).
+# This workflow is triggered each time the Java CI workflow succeeds
+# on master.
+# It looks for a milestone that is completed and close it.
 ---
-    name: CD
+  name: Close Milestone
+  
+  on:
+    pull_request:
+      branches:
+        - master
     
-    on:
-        push:
-            branches:
-                - main
-        pull_request:
-            branches:
-                - main
-    
-    # Variables to configure the workflow
-    env:
-      DOCKERFILE_PATH: "."
-      DOCKERFILE_FILENAME: "Dockerfile"
-      DOCKER_IMAGE_NAME: "topin/test-cd"
-    
-    jobs:
-      # Job to test if a new version is ready to be released
-      deliverability:
-        name: Check if a new version must be released
-        runs-on: ubuntu-20.04
-        outputs:
-          delivery: ${{ steps.version.outputs.delivery }}
-          version: ${{ steps.version.outputs.version }}
-          milestone_number: ${{ steps.version.outputs.milestone_number }}
-        steps:
-          # Get the version number from the milestone title and that it follows semver
-          - name: Get and check version
-            id: version
-            run: |
-              milestones=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-                  https://api.github.com/repos/${{ github.repository }}/milestones \
-                | jq -r '. | map(select(.state == "open"))')
-              if [ "$milestones" == "[]" ]
-              then
-                echo No milestone completed, not delivering
-                echo "::set-output name=delivery::forbidden"
-                exit 0
-              fi
-              echo -e "Completed milestones:\n$milestones"
-              version=$(echo "$milestones" | jq -r '.[0].title')
-              milestone_number=$(echo "$milestones" | jq -r '.[0].number')
-              echo Milestone $milestone_number has title $version
-              echo Checking milestone title is a version number
-              if ! [[ $version =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]
-              then
-                echo "Malformed milestone title: $version. It must match [0-9]+.[0-9]+.[0-9]+"
-                exit 1
-              fi
-              echo Ready to deliver
-              echo "version=$version"
-              echo "milestone_number=$milestone_number"
-              echo "delivery=allowed" >> $GITHUB_OUTPUT
-              echo "version=$version" >> $GITHUB_OUTPUT
-              echo "milestone_number=$milestone_number" >> $GITHUB_OUTPUT
-      release:
-        name: Test output access
-        runs-on: ubuntu-20.04
-        needs: deliverability
-        if: needs.deliverability.outputs.delivery == 'allowed'
-        steps:
-          - name: Merge and tag
-            env:
-              VERSION: ${{ needs.deliverability.outputs.version }}
-              MILSTONE_NUMBER: ${{ needs.deliverability.outputs.milestone_number }}
-            run: |
-              echo " Version : $VERSION"
-              echo "Milestone_versino :  $MILSTONE_NUMBER"
-
-    
-      close_milestone:
-        name: Close milestone
-        runs-on: ubuntu-20.04
-        needs:
-          - release
-          - deliverability
-        steps:
-          # Close the milestone (that is now 100% completed)
-          - name: Close milestone
-            run: |
+  
+  jobs:
+    close:
+      name: Close completed milestone
+      runs-on: ubuntu-latest
+      steps:
+        - name: Close a milestone if completed
+          run: |
+            milestones=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+                https://api.github.com/repos/${{ github.repository }}/milestones \
+              | jq -r '. | map(select(.open_issues == 0 and .closed_issues > 0 and .state == "open"))')
+            if [ "$milestones" != "[]" ]
+            then
+              milestone_number=$(echo "$milestones" | jq -r '.[0].title')
               curl --request PATCH \
-                --url https://api.github.com/repos/${GITHUB_REPOSITORY}/milestones/${{ needs.deliverability.outputs.milestone_number }} \
+                --url https://api.github.com/repos/${GITHUB_REPOSITORY}/milestones/${milestone_number} \
                 --header "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
                 --header 'Content-Type: application/json' \
                 --data '{"state":"closed"}'
+            fi
