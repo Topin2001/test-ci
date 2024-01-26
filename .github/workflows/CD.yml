@@ -42,7 +42,7 @@
             run: |
               milestones=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
                   https://api.github.com/repos/${{ github.repository }}/milestones \
-                | jq -r '. | map(select(.open_issues == 0 and .closed_issues > 0 and .state == "open"))')
+                | jq -r '. | map(select(.state == "open"))')
               if [ "$milestones" == "[]" ]
               then
                 echo No milestone completed, not delivering
@@ -62,9 +62,9 @@
               echo Ready to deliver
               echo "version=$version"
               echo "milestone_number=$milestone_number"
-              echo "{version}={$version}" >> $GITHUB_OUTPUT
-              echo "{milestone_number}={$milestone_number}" >> $GITHUB_OUTPUT
-              echo "{delivery}=allowed" >> $GITHUB_OUTPUT
+              echo "delivery=allowed" >> $GITHUB_OUTPUT
+              echo "version=$version" >> $GITHUB_OUTPUT
+              echo "milestone_number=$milestone_number" >> $GITHUB_OUTPUT
       release:
         name: Test output access
         runs-on: ubuntu-20.04
@@ -72,9 +72,12 @@
         if: needs.deliverability.outputs.delivery == 'allowed'
         steps:
           - name: Merge and tag
+            env:
+              VERSION: ${{ needs.deliverability.outputs.version }}
+              MILSTONE_NUMBER: ${{ needs.deliverability.outputs.milestone_number }}
             run: |
-              echo ${{ needs.deliverability.outputs.version }}
-              echo ${{ needs.deliverability.outputs.milestone_number }}
+              echo " Version : $VERSION"
+              echo "Milestone_versino :  $MILSTONE_NUMBER"
 
     
       close_milestone:
