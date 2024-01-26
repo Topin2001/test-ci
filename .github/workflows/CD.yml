@@ -29,7 +29,7 @@
               echo "github.repository: ${{ github.repository }}"
               curl -L \
                 -X PATCH \
-                -H "Content-Tye: application/json" \
+                -H "Content-Type: application/json" \
                 -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
                 https://api.github.com/repos/${GITHUB_REPOSITORY}/milestones/${milestone_number} \
                 -d '{"state":"closed"}'
