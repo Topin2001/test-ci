@@ -7,9 +7,9 @@
   name: Close Milestone
   
   on:
-    pull_request:
+    pull_request: 
       branches:
-        - master
+        - main
     
   
   jobs:
