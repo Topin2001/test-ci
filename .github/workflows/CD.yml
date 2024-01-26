@@ -25,6 +25,8 @@
             if [ "$milestones" != "[]" ]
             then
               milestone_number=$(echo "$milestones" | jq -r '.[0].number')
+              echo "Closing milestone $milestone_number"
+              echo "github.repository: ${{ github.repository }}"
               curl -L \
                 -X PATCH \
                 -H "Accept: application/vnd.github+json" \
